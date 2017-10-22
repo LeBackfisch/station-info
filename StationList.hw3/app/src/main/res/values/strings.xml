@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Station List</string>
+    <string name="station_load_error">Could not load station data.</string>
+    <string name="latitude">Latitude</string>
+    <string name="distance">Distance</string>
+    <string name="longitude">Longitude</string>
+    <string name="lines">Lines</string>
+
+    <string name="pref_strain_visible_key">pref_strain_station_visible</string>
+    <string name="pref_strain_visible_summary_on">S-Train stations are displayed.</string>
+    <string name="pref_strain_visible_summary_off">S-Train stations are not displayed.</string>
+    <string name="pref_strain_visible_title">S-Train Sations</string>
+
+    <string name="pref_subway_visible_key">pref_subway_station_visible</string>
+    <string name="pref_subway_visible_summary_on">Subway stations are displayed.</string>
+    <string name="pref_subway_visible_summary_off">Subway stations are not displayed.</string>
+    <string name="pref_subway_visible_title">Subway Sations</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_maps">Map</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

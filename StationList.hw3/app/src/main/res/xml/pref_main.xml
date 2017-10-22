@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+    <CheckBoxPreference
+        app:key="@string/pref_strain_visible_key"
+        app:defaultValue="@bool/pref_strain_visible_default"
+        app:summaryOn="@string/pref_strain_visible_summary_on"
+        app:summaryOff="@string/pref_strain_visible_summary_off"
+        app:title="@string/pref_strain_visible_title"
+        />
+    <CheckBoxPreference
+        app:key="@string/pref_subway_visible_key"
+        app:defaultValue="@bool/pref_subway_visible_default"
+        app:summaryOn="@string/pref_subway_visible_summary_on"
+        app:summaryOff="@string/pref_subway_visible_summary_off"
+        app:title="@string/pref_subway_visible_title"
+        />
+</PreferenceScreen>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="datasource_url">http://data.wien.gv.at/daten/geo?service=WFS&amp;request=GetFeature&amp;version=1.1.0&amp;typeName=ogdwien:OEFFHALTESTOGD&amp;srsName=EPSG:4326&amp;outputFormat=json</string>
+    <!--<string name="datasource_url">http://192.168.1.21:5000/data/OEFFHALTESTOGD.json</string>-->
+    <!--<string name="datasource_url">http://10.202.221.167:5000/data/OEFFHALTESTOGD.json</string>-->
+</resources>
