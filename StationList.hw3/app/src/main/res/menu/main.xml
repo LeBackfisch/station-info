@@ -13,10 +13,4 @@
         app:showAsAction="never"
         android:orderInCategory="100"
         />
-    <item
-        android:title="Map"
-        android:orderInCategory="98"
-        app:showAsAction="never"
-        android:id="@+id/action_map"
-        />
 </menu>

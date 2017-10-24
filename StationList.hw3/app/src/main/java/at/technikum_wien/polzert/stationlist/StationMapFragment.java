@@ -22,12 +22,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
 import at.technikum_wien.polzert.stationlist.data.Station;
+import at.technikum_wien.polzert.stationlist.data.StationListEvent;
 import at.technikum_wien.polzert.stationlist.data.StationParser;
 
 
@@ -51,6 +55,23 @@ public class StationMapFragment extends Fragment implements OnMapReadyCallback {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Subscribe
+    public void onStationEvent(StationListEvent event) {
+        setMarkers(event.stationList);
     }
 
     @Override

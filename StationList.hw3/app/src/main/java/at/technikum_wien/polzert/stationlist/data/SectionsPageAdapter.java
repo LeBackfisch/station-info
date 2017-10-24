@@ -1,4 +1,4 @@
-package at.technikum_wien.polzert.stationlist;
+package at.technikum_wien.polzert.stationlist.data;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
