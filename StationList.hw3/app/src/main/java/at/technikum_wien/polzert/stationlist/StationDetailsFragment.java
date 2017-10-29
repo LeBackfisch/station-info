@@ -14,6 +14,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -74,7 +76,22 @@ public class StationDetailsFragment extends LocationAwareFragment implements OnM
     map = googleMap;
     map.getUiSettings().setZoomControlsEnabled(false);
     LatLng stationMarker = new LatLng(mStation.getLatitude(), mStation.getLongitude());
-    map.addMarker(new MarkerOptions().position(stationMarker).title(mStation.getName()));
+    if(mStation.isSTrainStation() && mStation.isSubwayStation()){
+      BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_both);
+      map.addMarker(new MarkerOptions().position(stationMarker).title(mStation.getName()).icon(icon));
+    }
+    else if(mStation.isSTrainStation() && !mStation.isSubwayStation()){
+      BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_strain);
+      map.addMarker(new MarkerOptions().position(stationMarker).title(mStation.getName()).icon(icon));
+    }
+    else if (!mStation.isSTrainStation() && mStation.isSubwayStation()){
+      BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_subway);
+      map.addMarker(new MarkerOptions().position(stationMarker).title(mStation.getName()).icon(icon));
+    }
+    if(mLocation != null){
+      LatLng myPositionMarker = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+      map.addMarker(new MarkerOptions().position(myPositionMarker).title("My Position"));
+    }
     map.moveCamera(CameraUpdateFactory.newLatLngZoom(stationMarker,10));
   }
 }

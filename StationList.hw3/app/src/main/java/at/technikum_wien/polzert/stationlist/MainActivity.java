@@ -1,6 +1,7 @@
 package at.technikum_wien.polzert.stationlist;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.widget.TabHost;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -83,6 +85,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
+        }
+        if(itemId == R.id.action_location){
+            TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+            TabLayout.Tab tab = tabLayout.getTabAt(1);
+            tab.select();
+            StationMapFragment fragment = (StationMapFragment) fm.findFragmentById(R.id.full_map);
+            /**Location loc = fragment.GetLocation();
+            if(loc != null)
+            {
+
+            }**/
+        }
+        if(itemId == R.id.action_remove_route){
+            StationMapFragment fragment = (StationMapFragment) fm.findFragmentById(R.id.full_map);
+            Location loc = fragment.GetLocation();
+            if(loc != null){
+                fragment.RemovePolyline();
+            }
+
         }
         return super.onOptionsItemSelected(item);
     }
