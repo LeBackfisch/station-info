@@ -17,11 +17,16 @@
         android:id="@+id/action_location"
         android:title="Show Current Position"
         app:showAsAction="never"
-        android:orderInCategory="98"
-        ></item>
+        android:orderInCategory="98"></item>
     <item
         android:title="Remove Route"
         android:id="@+id/action_remove_route"
         app:showAsAction="never"
         android:orderInCategory="97"></item>
+    <item
+        android:orderInCategory="96"
+        app:showAsAction="never"
+        android:title="Show Location on Update"
+        android:id="@+id/action_location_update"
+        />
 </menu>

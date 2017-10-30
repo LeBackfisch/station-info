@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -52,8 +53,9 @@ import at.technikum_wien.polzert.stationlist.data.StationListEvent;
 import at.technikum_wien.polzert.stationlist.data.StationParser;
 
 
-public class StationMapFragment extends LocationAwareFragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class StationMapFragment extends LocationAwareFragment implements OnMapReadyCallback {
 
+    private static final String LOG_TAG = StationMapFragment.class.getCanonicalName();
     private GoogleMap map;
     MapView mapView;
     View mView;
@@ -80,8 +82,9 @@ public class StationMapFragment extends LocationAwareFragment implements OnMapRe
         return mLocation;
     }
 
-    public void ZoomMarker(){
-        LatLng mymarkerposition = MyPositionMarker.getPosition();
+    public void ZoomMarker(Location location){
+
+        LatLng mymarkerposition = new LatLng(location.getLatitude(), location.getLongitude());
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(mymarkerposition, 15));
     }
 
@@ -133,7 +136,12 @@ public class StationMapFragment extends LocationAwareFragment implements OnMapRe
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        map.getUiSettings().setZoomControlsEnabled(false);
+        if(mLocation == null){
+            mLocation = new Location("");
+            mLocation.setLatitude(48.2025);
+            mLocation.setLongitude(16.379111);
+        }
+        map.getUiSettings().setZoomControlsEnabled(true);
 
     }
 
@@ -157,38 +165,55 @@ public class StationMapFragment extends LocationAwareFragment implements OnMapRe
                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.mipmap.ic_subway);
                map.addMarker(new MarkerOptions().position(stationMarker).title(station.getName()).icon(icon));
            }
+           map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+               @Override
+               public boolean onMarkerClick(Marker marker) {
+                   if(mLocation != null){
+                       if(polyline != null){
+                           polyline.remove();
+                       }
+
+                       String url = "https://maps.googleapis.com/maps/api/directions/json" +
+                               "?origin=" + mLocation.getLatitude() + "," + mLocation.getLongitude() +
+                               "&destination=" + marker.getPosition().latitude + "," +  marker.getPosition().longitude +
+                               "&sensor=false&units=metric&mode=walking" +
+                               "&key=" + getString(R.string.google_maps_key);
+                       new RouteTask().execute(url);
+                   }
+                   return true;
+               }
+           });
+
+
+
             i++;
         }
         if(mLocation != null){
             LatLng myPositionMarker = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
             MyPositionMarker = map.addMarker(new MarkerOptions().position(myPositionMarker).title("My Position"));
-           // map.addMarker(MyPositionMarker);
-
-          //  map.addMarker(new MarkerOptions().position(myPositionMarker).title("My Position"));
         }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(stationMarker,10));
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        if(mLocation != null){
-            if(polyline != null){
-                polyline.remove();
-            }
-            String url = "https://maps.googleapis.com/maps/api/directions/json" +
-                    "?origin=" + mLocation.getLatitude() + "," + mLocation.getLongitude() +
-                    "&destination=" + marker.getPosition().latitude + "," + marker.getPosition().longitude +
-                    "&sensor=false&units=metric&mode=walking" +
-                    "&key=" + getString(R.string.google_maps_key);
-            new RouteTask().execute(url);
-        }
-        return true;
     }
     public void RemovePolyline(){
         if(polyline != null){
             polyline.remove();
         }
     }
+
+    public boolean checkifLocationChanged(){
+        Location newLocation = GetLocationOnce();
+        if(newLocation != null){
+            if(newLocation != mLocation){
+                mLocation = newLocation;
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
 
     private class RouteTask extends AsyncTask<String, Void, List<LatLng>>{
 
@@ -227,13 +252,13 @@ public class StationMapFragment extends LocationAwareFragment implements OnMapRe
                 return points;
             }
             catch (MalformedURLException ex) {
-                //Log.e(LOG_TAG, "Malformed URL", ex);
+                Log.e(LOG_TAG, "Malformed URL", ex);
             }
             catch (IOException ex) {
-                //Log.e(LOG_TAG, "I/O error", ex);
+                Log.e(LOG_TAG, "I/O error", ex);
             }
             catch (JSONException ex) {
-                //Log.e(LOG_TAG, "Json Exception", ex);
+                Log.e(LOG_TAG, "Json Exception", ex);
             }
             finally {
                 if (urlConnection != null)

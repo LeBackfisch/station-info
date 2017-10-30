@@ -128,4 +128,44 @@ public abstract class LocationAwareFragment extends Fragment {
   }
 
   abstract void onLocationResult(Location location);
+
+  public Location GetLocationOnce(){
+    final Location[] newLocation = new Location[1];
+    try {
+      Log.d(LOG_TAG, "Starting location updates.");
+      mFusedLocationClient.getLastLocation()
+              .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                  // Got last known location. In some rare situations this can be null.
+                  if (location != null) {
+                    newLocation[0] = location;
+                    try
+                    {
+                      mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
+                    }
+                    catch (SecurityException ex) {
+                      Log.e(LOG_TAG, "Could not start location updates.", ex);
+                    }
+                  }
+                }
+              })
+              .addOnFailureListener(getActivity(), new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                  try {
+                    mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null /* Looper */);
+                  }
+                  catch (SecurityException ex) {
+                    Log.e(LOG_TAG, "Could not start location updates.", ex);
+                  }
+                }
+              });
+    }
+    catch (SecurityException ex) {
+      Log.e(LOG_TAG, "Could not start location updates.", ex);
+    }
+    return newLocation[0];
+  }
 }
+

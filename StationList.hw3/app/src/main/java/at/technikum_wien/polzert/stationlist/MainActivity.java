@@ -3,6 +3,7 @@ package at.technikum_wien.polzert.stationlist;
 import android.content.Intent;
 import android.location.Location;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -38,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private List<Station> stationList = new ArrayList<>();
     private Toast mToast;
     private FragmentManager fm = getSupportFragmentManager();
-
+    private StationListFragment stationListFragment;
+    private StationMapFragment stationMapFragment;
 
     public List<Station> getStationList(){
         getSupportLoaderManager().restartLoader(STATION_LOADER, null, this);
@@ -48,8 +50,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-
-
+        stationListFragment = new StationListFragment();
+        stationMapFragment = new StationMapFragment();
         mSectionsPageAdapter = new SectionsPageAdapter(getSupportFragmentManager());
 
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -61,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setutpViewPager(ViewPager viewPager){
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(new StationListFragment(), "StationList");
-        adapter.addFragment(new StationMapFragment(), "StationMap");
+        adapter.addFragment(stationListFragment, "StationList");
+        adapter.addFragment(stationMapFragment, "StationMap");
         viewPager.setAdapter(adapter);
     }
 
@@ -90,20 +92,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
             TabLayout.Tab tab = tabLayout.getTabAt(1);
             tab.select();
-            StationMapFragment fragment = (StationMapFragment) fm.findFragmentById(R.id.full_map);
-            /**Location loc = fragment.GetLocation();
+
+            Location loc = stationMapFragment.GetLocation();
             if(loc != null)
             {
-
-            }**/
+                stationMapFragment.ZoomMarker(loc);
+            }
         }
         if(itemId == R.id.action_remove_route){
-            StationMapFragment fragment = (StationMapFragment) fm.findFragmentById(R.id.full_map);
-            Location loc = fragment.GetLocation();
-            if(loc != null){
-                fragment.RemovePolyline();
-            }
 
+             if(stationMapFragment.GetLocation() != null);
+             {
+                stationMapFragment.RemovePolyline();
+             }
+        }
+        if(itemId == R.id.action_location_update){
+            TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+            TabLayout.Tab tab = tabLayout.getTabAt(1);
+
+
+            Location loc = stationMapFragment.GetLocation();
+            if(loc != null)
+            {
+                if(stationMapFragment.checkifLocationChanged()){
+                    loc = stationMapFragment.GetLocation();
+                    tab.select();
+                    stationMapFragment.ZoomMarker(loc);
+                }
+            }
         }
         return super.onOptionsItemSelected(item);
     }
