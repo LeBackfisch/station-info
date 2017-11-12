@@ -41,6 +41,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:authorities="at.technikum_wien.polzert.stationlist.data"
+            android:name=".data.StationContentProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
