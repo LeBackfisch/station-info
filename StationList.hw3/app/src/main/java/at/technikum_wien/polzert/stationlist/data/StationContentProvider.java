@@ -58,6 +58,7 @@ public class StationContentProvider extends ContentProvider {
         }
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return  retCursor;
+
     }
 
     @Nullable

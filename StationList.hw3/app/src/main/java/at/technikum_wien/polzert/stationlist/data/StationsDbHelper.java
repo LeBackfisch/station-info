@@ -19,7 +19,7 @@ public class StationsDbHelper extends SQLiteOpenHelper {
             StationsContract.StationsTable._ID+" INTEGER PRIMARY KEY, "+
             StationsContract.StationsTable.CONLUMN_NAME+" TEXT NOT NULL, "+
             StationsContract.StationsTable.COLUMN_POSITION+ " TEXT NOT NULL, "+
-            StationsContract.StationsTable.COLUMN_LINES+ "TEXT NOT NULL);";
+            StationsContract.StationsTable.COLUMN_LINES+ " TEXT NOT NULL);";
         db.execSQL(CREATE_TABLE);
     }
 

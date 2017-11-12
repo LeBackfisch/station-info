@@ -177,12 +177,15 @@ public class MainActivity extends AppCompatActivity implements
 
     public List<Station> getDataFromCursor(Cursor cursor){
         List<Station> stations = new LinkedList<>();
-        if(cursor.moveToFirst()){
-            String name = cursor.getString(cursor.getColumnIndex("station_name"));
-            String position = cursor.getString(cursor.getColumnIndex("position"));
-            String lines = cursor.getString(cursor.getColumnIndex("lines"));
-            Station station = parseToStation(name, position, lines);
-            stations.add(station);
+        if(cursor != null){
+            cursor.moveToFirst();
+            while (cursor.moveToNext()){
+                String name = cursor.getString(cursor.getColumnIndex("station_name"));
+                String position = cursor.getString(cursor.getColumnIndex("position"));
+                String lines = cursor.getString(cursor.getColumnIndex("linesTEXT"));
+                Station station = parseToStation(name, position, lines);
+                stations.add(station);
+            }
         }
         return  stations;
     }

@@ -18,9 +18,9 @@ public class StationsContract {
 
         public static final String CONLUMN_NAME = "station_name";
         public static final String COLUMN_POSITION = "position";
-        public static final String COLUMN_LINES = "lines";
+        public static final String COLUMN_LINES = "linesTEXT";
 
-        public static final Uri getTaskWithUri (long id){
+        public static final Uri getTaskWithIdUri (long id){
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(id)).build();
         }
     }
