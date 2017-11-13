@@ -11,7 +11,7 @@ public class StationLoader extends CursorLoader {
     public static final int LOADER_ID = 42;
 
     private static final String SORT_ORDER =
-            StationsContract.StationsTable.CONLUMN_NAME + " DESC";
+            StationsContract.StationsTable.CONLUMN_NAME + " ASC";
 
     public StationLoader(Context context) {
         super(context, StationsContract.StationsTable.CONTENT_URI,

@@ -45,6 +45,13 @@
             android:authorities="at.technikum_wien.polzert.stationlist.data"
             android:name=".data.StationContentProvider"
             android:exported="false"/>
+        <service
+            android:exported="false"
+            android:name=".data.UpdateJobService">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

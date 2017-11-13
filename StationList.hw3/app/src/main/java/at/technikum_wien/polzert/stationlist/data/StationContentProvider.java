@@ -103,6 +103,8 @@ public class StationContentProvider extends ContentProvider {
                         StationsContract.StationsTable._ID + " = ?",
                         new String[] {id});
                 break;
+            case STATIONS:
+                db.delete(StationsContract.StationsTable.TABLE_NAME, null, null);
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }

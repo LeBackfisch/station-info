@@ -41,6 +41,7 @@ public class StationListFragment extends LocationAwareFragment  implements Stati
 
   @Subscribe
   public void onStationEvent(StationListEvent event) {
+    stations = event.stationList;
    switchStations(event.stationList);
   }
 
@@ -98,7 +99,9 @@ public class StationListFragment extends LocationAwareFragment  implements Stati
 
   @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    if (key.equals(getString(R.string.pref_strain_visible_key)) || key.equals(getString(R.string.pref_subway_visible_key))) {
-    }
+      boolean ubahn = sharedPreferences.getBoolean("pref_subway_station_visible", true);
+      boolean sbahn = sharedPreferences.getBoolean("pref_strain_station_visible", true);
+      ((MainActivity) getActivity()).setStationList(sbahn, ubahn);
+
   }
 }

@@ -23,6 +23,13 @@ import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.RetryStrategy;
+import com.firebase.jobdispatcher.Trigger;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
@@ -33,12 +40,18 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import at.technikum_wien.polzert.stationlist.SettingsStrategy.AllStationState;
+import at.technikum_wien.polzert.stationlist.SettingsStrategy.NoStationState;
+import at.technikum_wien.polzert.stationlist.SettingsStrategy.OnlySBahnState;
+import at.technikum_wien.polzert.stationlist.SettingsStrategy.OnlyUBahnState;
 import at.technikum_wien.polzert.stationlist.data.SectionsPageAdapter;
 import at.technikum_wien.polzert.stationlist.data.Station;
 import at.technikum_wien.polzert.stationlist.data.StationListEvent;
 import at.technikum_wien.polzert.stationlist.data.StationLoader;
+import at.technikum_wien.polzert.stationlist.data.StationLoaderIntentService;
 import at.technikum_wien.polzert.stationlist.data.StationParser;
 import at.technikum_wien.polzert.stationlist.data.StationsContract;
+import at.technikum_wien.polzert.stationlist.data.UpdateJobService;
 
 public class MainActivity extends AppCompatActivity implements
        // LoaderManager.LoaderCallbacks<List<Station>>
@@ -54,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements
     private StationListFragment stationListFragment;
     private StationMapFragment stationMapFragment;
     private Cursor mCursor;
+    private boolean mFlag = false;
 
     public List<Station> getStationList(){
         getSupportLoaderManager().restartLoader(StationLoader.LOADER_ID, null, this);
@@ -72,6 +86,18 @@ public class MainActivity extends AppCompatActivity implements
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+        Job updateJob = dispatcher.newJobBuilder()
+                .setService(UpdateJobService.class)
+                .setTag("updating station data")
+                .setRecurring(true)
+                .setLifetime(Lifetime.FOREVER)
+                .setTrigger(Trigger.executionWindow(60, 10000))
+                .setReplaceCurrent(true)
+                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+                .build();
+        dispatcher.mustSchedule(updateJob);
 
         startLoader(false);
     }
@@ -102,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements
         int itemId = item.getItemId();
 
         if (itemId == R.id.action_reload) {
-            // getSupportLoaderManager().restartLoader(StationLoader.LOADER_ID, null, this);
+            emptyDB();
             fillDB();
             return true;
         }
@@ -157,10 +183,38 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    public void setStationList(boolean sbahn, boolean ubahn){
+        List<Station> stations = new ArrayList<>();
+        if(sbahn == true && ubahn == true){
+            AllStationState state = new AllStationState();
+            stations = state.getStations(stationList);
+        }
+        else if(sbahn){
+            OnlySBahnState state = new OnlySBahnState();
+            stations = state.getStations(stationList);
+        }
+        else if(ubahn){
+            OnlyUBahnState state = new OnlyUBahnState();
+            stations = state.getStations(stationList);
+        }
+        else {
+            NoStationState state = new NoStationState();
+            stations = state.getStations(stationList);
+        }
+        EventBus.getDefault().post(new StationListEvent(new ArrayList<Station>()));
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         List<Station> stations = getDataFromCursor(data);
-        EventBus.getDefault().post(new StationListEvent(stations));
+        stationList = stations;
+         if (stationList.size() == 0 && mFlag == false){
+            fillDB();
+             mFlag = true;
+        }
+        if(stationList.size() > 0) {
+            EventBus.getDefault().post(new StationListEvent(stations));
+        }
         swapCursor(data);
     }
 
@@ -176,9 +230,14 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public List<Station> getDataFromCursor(Cursor cursor){
-        List<Station> stations = new LinkedList<>();
-        if(cursor != null){
+        List<Station> stations = new ArrayList<>();
+        if(cursor != null && cursor.getCount() > 0){
             cursor.moveToFirst();
+            String name1 = cursor.getString(cursor.getColumnIndex("station_name"));
+            String position1 = cursor.getString(cursor.getColumnIndex("position"));
+            String lines1 = cursor.getString(cursor.getColumnIndex("linesTEXT"));
+            Station station1 = parseToStation(name1, position1, lines1);
+            stations.add(station1);
             while (cursor.moveToNext()){
                 String name = cursor.getString(cursor.getColumnIndex("station_name"));
                 String position = cursor.getString(cursor.getColumnIndex("position"));
@@ -206,9 +265,25 @@ public class MainActivity extends AppCompatActivity implements
         return station;
     }
 
+    public void emptyDB(){
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    getContentResolver().delete(StationsContract.StationsTable.CONTENT_URI, null, null);
+                }
+                catch (Exception e){
+
+                }
+                return null;
+            }
+        }.execute();
+    }
+
+
     public void fillDB(){
         new AsyncTask<Void, Void, Void>() {
-            List<Station> stationList = new LinkedList<Station>();
+            List<Station> stationList = new ArrayList<Station>();
             @Override
             protected Void doInBackground(Void... params) {
                 try {
@@ -234,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements
                     String[] lines = station.getLines().toArray(new String[station.getLines().size()]);
 
                     for (int j = 0; j < lines.length; j++){
-                        linesstring+=lines[j]+", ";
+                        linesstring+=lines[j]+",";
                     }
                     linesstring = linesstring.substring(0, linesstring.length() - 2);
                     contentValues.put(StationsContract.StationsTable.COLUMN_LINES, linesstring);
@@ -244,50 +319,5 @@ public class MainActivity extends AppCompatActivity implements
             }
         }.execute();
     }
-  /*  @Override
-    public Loader<List<Station>> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<List<Station>>(this) {
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-                forceLoad();
-            }
-
-            @Override
-            public List<Station> loadInBackground() {
-                try {
-                    URL stationURL = new URL(getString(R.string.datasource_url));
-                    HttpURLConnection connection = (HttpURLConnection) stationURL.openConnection();
-                    connection.setConnectTimeout(5000);
-                    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                        return null;
-                    }
-                    List<Station> stationList = StationParser.parseJson(getContext(), connection.getInputStream());
-                    return stationList;
-                }
-                catch(IOException ex) {
-                    return null;
-                }
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(Loader<List<Station>> loader, List<Station> data) {
-        if (data == null) {
-            if (mToast != null)
-                mToast.cancel();
-            mToast = Toast.makeText(this, R.string.station_load_error, Toast.LENGTH_LONG);
-            mToast.show();
-        }
-        else
-            stationList = data;
-        EventBus.getDefault().post(new StationListEvent(data));
-    }
-
-    @Override
-    public void onLoaderReset(Loader<List<Station>> loader) {
-    }
-        */
 
 }
